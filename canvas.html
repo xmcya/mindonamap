@@ -1,0 +1,256 @@
+<html>
+  <head>
+    <title>Mindmap</title>
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+    </style>
+  </head>
+  <body onload="init();">
+	  
+	<style type="text/css">
+		<!--
+		
+		a{font-family:Verdana, sans-serif;} 
+		
+		#site {
+		  margin: 0 auto;
+		  width: 1200px;
+		  height: 800;
+		}
+		
+		#canvas {
+			float:left;
+			width:800px;
+		}
+		#navi_add {
+			margin-left: 810px;
+			width: 300px;
+			background-color:lightblue;
+		}
+		#navi_mode {
+			margin-left: 810px;
+			width: 300px;
+			background-color:lightyellow;
+		}
+		#navi_edit {
+			margin-left: 810px;
+			width: 300px;
+			background-color:lightgreen;
+		}
+		-->
+	</style>
+	
+	<div id=site>
+		<div id=canvas>
+			<canvas id="tutorial" width="800" height="600"
+				style="border:2px solid #000000;">
+			</canvas>
+		</div>
+		
+		<div id=navi_add>
+			<a>Size: </a><input type="number" id="inputSize" value="30"></br>
+			<a>PosX: </a><input type="number" id="inputPosX" value="30"></br>
+			<a>PosY: </a><input type="number" id="inputPosY" value="30"></br>
+			<button name="buttonGo" onclick="go();">Ok</button></br>
+		</div>
+		
+		<div id=navi_mode>
+			<input type="radio" name="mode" value="add" checked onclick="mode=0"><a> Add</a></br>
+			<input type="radio" name="mode" value="move" onclick="mode=1"><a> Move/Edit</a></br>
+			<!-- <input type="radio" name="mode" value="connect" onclick="mode=3"><a> Connect</a></br> -->
+			<input type="radio" name="mode" value="delete" onclick="mode=2"><a> Delete</a></br>
+		</div>
+		
+		<div id=navi_edit>
+			<a>Current Circle:</a></br>
+			<a>Name: </a><input type="text" id="circleName" value="---"></br>
+			<a>Size: </a><input type="number" id="circleSize" value="0"></br>
+			<button name="buttonGo" onclick="editCircle();">Change</button></br>
+		</div>
+	</div>
+  </body>
+
+  <script type="text/javascript">
+
+		var context;
+		var mode = 0;
+		var currentCircle = null;
+		var circles =[];
+
+		function Circle(size,posx,posy){
+			this.posx = posx;
+			this.posy = posy;
+			this.draw = draw;
+			this.text = "circle";
+			this.color = "white";
+			this.size = size;
+			this.supernode = null;
+			this.connections = [];
+		}
+
+		function init(){
+			circles.push(new Circle(40,100,100));
+			drawAll();
+		}
+
+		function draw(){
+			
+			var connected = this.connections;
+			
+			for(var j=0; j < connected.length; j++){
+				context.moveTo(this.posx, this.posy);
+				context.lineTo(connected[j].posx, connected[j].posy);
+				context.stroke();	
+			}
+			
+			context.beginPath();
+			context.arc(this.posx,this.posy,this.size,0,Math.PI*2,true);
+			context.strokeStyle = 'black';
+			context.fillStyle = this.color;
+			context.fill();
+			context.stroke();
+			
+			context.fillStyle = 'black';
+			context.fillText(this.text,this.posx,this.posy);
+		}
+
+		function drawAll(){
+			
+			var canvas = document.getElementById('tutorial');
+
+			if (canvas.getContext){
+				context = canvas.getContext('2d');
+				context.clearRect(0,0,canvas.width,canvas.height);
+
+				for(var i=0; i < circles.length; i++){
+					circles[i].draw(context);
+				}
+			}
+		}
+
+		function getClickedCircle(posx,posy){
+			
+			for(var i=circles.length-1; i >= 0; i--){
+				
+				if( (Math.pow(circles[i].posx-posx,2)+Math.pow(circles[i].posy-posy,2)) <= (circles[i].size*circles[i].size)){
+					return circles[i];
+				}
+			}
+			
+			return null;
+		}
+
+		document.getElementById('tutorial').onmousedown = function(e){
+
+			e = e || window.event;
+			
+			var rect = this.getBoundingClientRect();
+
+			var posx = e.clientX - rect.left;
+			var posy = e.clientY - rect.top;
+
+			//Add
+			if(mode == 0){
+				
+				if(currentCircle === null){
+					
+					currentCircle = getClickedCircle(posx,posy);
+					
+					if(currentCircle !== null){
+						var inputCircleName = document.getElementById('circleName');
+						inputCircleName.value = currentCircle.text;
+						var inputCircleSize = document.getElementById('circleSize');
+						inputCircleSize.value = currentCircle.size;
+						currentCircle.color = "purple";
+					}
+					
+				}else{
+					var newNode = new Circle(40,posx,posy)
+					circles.push(newNode);
+					currentCircle.connections.push(newNode);
+					newNode.superNode = currentCircle;
+					currentCircle.color = "white";
+					currentCircle = null;
+				}
+				
+			//Move
+			}else if(mode == 1){
+				
+				if(currentCircle === null){
+					
+					currentCircle = getClickedCircle(posx,posy);
+					
+					if(currentCircle !== null){
+						var inputCircleName = document.getElementById('circleName');
+						inputCircleName.value = currentCircle.text;
+						var inputCircleSize = document.getElementById('circleSize');
+						inputCircleSize.value = currentCircle.size;
+						currentCircle.color = "purple";
+					}
+					
+				}else{
+					currentCircle.color = "white";
+					currentCircle.posx = posx;
+					currentCircle.posy = posy;
+					currentCircle = null;
+				}
+			//Delete
+			}else if(mode == 2){
+				
+				for(var i=circles.length-1; i >= 1; i--){
+						
+					if( (Math.pow(circles[i].posx-posx,2) + Math.pow(circles[i].posy-posy,2)) <= (circles[i].size*circles[i].size)){
+						
+						var superNode = circles[i].superNode;
+						
+						for(var j =0; j < superNode.connections.length; j++){
+							if(superNode.connections[j] == circles[i]){
+								superNode.connections.splice(j,1);
+								break;
+							}
+						}
+						
+						if(circles[i].connections !== null){
+							for(var k =0; k < circles[i].connections.length; k++){
+								circles[i].connections[k].superNode = superNode;
+								superNode.connections.push(circles[i].connections[k]);
+							}
+						}
+						
+						circles.splice(i,1);
+						break;
+					}
+				}
+			}
+			
+			drawAll();
+			
+		};
+
+		function go(){
+			var size = document.getElementById('inputSize').value;
+			var posx = document.getElementById('inputPosX').value;
+			var posy = document.getElementById('inputPosY').value;
+			
+			circles.push(new Circle(size,posx,posy));
+
+			drawAll();
+		}
+		
+		function editCircle(){
+			
+			if(currentCircle !== null){
+				var inputCircleName = document.getElementById('circleName');
+				var inputCircleSize = document.getElementById('circleSize');
+				currentCircle.size = inputCircleSize.value;
+				currentCircle.text = inputCircleName.value;
+			}
+			
+			drawAll();
+		}
+
+
+
+  </script>
+</html>
+
