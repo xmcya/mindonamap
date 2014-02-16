@@ -216,8 +216,10 @@
 				
 				for(var i=nodes.length-1; i >= 1; i--){
 						
-					if( (Math.pow(nodes[i].posx-posx,2) + Math.pow(nodes[i].posy-posy,2)) <= (nodes[i].size*nodes[i].size)){
-						
+					//if( (Math.pow(nodes[i].posx-posx,2) + Math.pow(nodes[i].posy-posy,2)) <= (nodes[i].size*nodes[i].size)){
+					if(posx > nodes[i].posx && posx < (nodes[i].posx + nodes[i].width) &&
+					   posy > nodes[i].posy && posy < (nodes[i].posy + nodes[i].height)){
+					   
 						var superNode = nodes[i].superNode;
 						
 						for(var j =0; j < superNode.connections.length; j++){
