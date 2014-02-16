@@ -47,12 +47,12 @@
 			</canvas>
 		</div>
 		
-		<div id=navi_add>
+		<!-- <div id=navi_add>
 			<a>Size: </a><input type="number" id="inputSize" value="30"></br>
 			<a>PosX: </a><input type="number" id="inputPosX" value="30"></br>
 			<a>PosY: </a><input type="number" id="inputPosY" value="30"></br>
 			<button name="buttonGo" onclick="go();">Ok</button></br>
-		</div>
+		</div> -->
 		
 		<div id=navi_mode>
 			<input type="radio" name="mode" value="add" checked onclick="mode=0"><a> Add</a></br>
@@ -62,10 +62,10 @@
 		</div>
 		
 		<div id=navi_edit>
-			<a>Current Circle:</a></br>
-			<a>Name: </a><input type="text" id="circleName" value="---"></br>
-			<a>Size: </a><input type="number" id="circleSize" value="0"></br>
-			<button name="buttonGo" onclick="editCircle();">Change</button></br>
+			<a>Current Node:</a></br>
+			<a>Name: </a><input type="text" id="NodeName" value="---"></br>
+			<a>Size: </a><input type="number" id="NodeSize" value="0"></br>
+			<button name="buttonGo" onclick="editNode();">Change</button></br>
 		</div>
 	</div>
   </body>
@@ -74,22 +74,24 @@
 
 		var context;
 		var mode = 0;
-		var currentCircle = null;
-		var circles =[];
+		var currentNode = null;
+		var nodes =[];
 
-		function Circle(size,posx,posy){
+		function Node(posx,posy,width,height){
 			this.posx = posx;
 			this.posy = posy;
 			this.draw = draw;
-			this.text = "circle";
+			this.text = "Node";
 			this.color = "white";
-			this.size = size;
+			//this.size = size;
+			this.width = width;
+			this.height = height;
 			this.supernode = null;
 			this.connections = [];
 		}
 
 		function init(){
-			circles.push(new Circle(40,100,100));
+			nodes.push(new Node(100,100,60,40));
 			drawAll();
 		}
 
@@ -98,20 +100,30 @@
 			var connected = this.connections;
 			
 			for(var j=0; j < connected.length; j++){
-				context.moveTo(this.posx, this.posy);
-				context.lineTo(connected[j].posx, connected[j].posy);
+				context.moveTo(this.posx + this.width/2, 
+							   this.posy + this.height/2);
+							   
+				context.lineTo(connected[j].posx + connected[j].width/2, 
+							   connected[j].posy + connected[j].height/2);
+							   
 				context.stroke();	
 			}
 			
 			context.beginPath();
-			context.arc(this.posx,this.posy,this.size,0,Math.PI*2,true);
+			//context.arc(this.posx,this.posy,this.size,0,Math.PI*2,true);
+			context.rect(this.posx,this.posy,this.width,this.height);
 			context.strokeStyle = 'black';
 			context.fillStyle = this.color;
 			context.fill();
 			context.stroke();
 			
 			context.fillStyle = 'black';
-			context.fillText(this.text,this.posx,this.posy);
+			
+			var metrics = context.measureText(this.text);
+			
+			context.fillText(this.text,
+							 this.posx + this.width/2 - metrics.width/2, 
+							 this.posy + this.height/2);
 		}
 
 		function drawAll(){
@@ -122,18 +134,23 @@
 				context = canvas.getContext('2d');
 				context.clearRect(0,0,canvas.width,canvas.height);
 
-				for(var i=0; i < circles.length; i++){
-					circles[i].draw(context);
+				for(var i=0; i < nodes.length; i++){
+					nodes[i].draw(context);
 				}
 			}
 		}
 
-		function getClickedCircle(posx,posy){
+		function getClickedNode(posx,posy){
 			
-			for(var i=circles.length-1; i >= 0; i--){
+			for(var i=nodes.length-1; i >= 0; i--){
 				
-				if( (Math.pow(circles[i].posx-posx,2)+Math.pow(circles[i].posy-posy,2)) <= (circles[i].size*circles[i].size)){
-					return circles[i];
+				/*if( (Math.pow(nodes[i].posx-posx,2)+Math.pow(nodes[i].posy-posy,2)) <= (nodes[i].size*nodes[i].size)){
+					return nodes[i];
+				}*/
+				
+				if(posx > nodes[i].posx && posx < (nodes[i].posx + nodes[i].width) &&
+				   posy > nodes[i].posy && posy < (nodes[i].posy + nodes[i].height)){
+					return nodes[i];
 				}
 			}
 			
@@ -152,72 +169,72 @@
 			//Add
 			if(mode == 0){
 				
-				if(currentCircle === null){
+				if(currentNode === null){
 					
-					currentCircle = getClickedCircle(posx,posy);
+					currentNode = getClickedNode(posx,posy);
 					
-					if(currentCircle !== null){
-						var inputCircleName = document.getElementById('circleName');
-						inputCircleName.value = currentCircle.text;
-						var inputCircleSize = document.getElementById('circleSize');
-						inputCircleSize.value = currentCircle.size;
-						currentCircle.color = "purple";
+					if(currentNode !== null){
+						var inputNodeName = document.getElementById('NodeName');
+						inputNodeName.value = currentNode.text;
+						var inputNodeSize = document.getElementById('NodeSize');
+						inputNodeSize.value = currentNode.size;
+						currentNode.color = "purple";
 					}
 					
 				}else{
-					var newNode = new Circle(40,posx,posy)
-					circles.push(newNode);
-					currentCircle.connections.push(newNode);
-					newNode.superNode = currentCircle;
-					currentCircle.color = "white";
-					currentCircle = null;
+					var newNode = new Node(posx,posy,40,40)
+					nodes.push(newNode);
+					currentNode.connections.push(newNode);
+					newNode.superNode = currentNode;
+					currentNode.color = "white";
+					currentNode = null;
 				}
 				
 			//Move
 			}else if(mode == 1){
 				
-				if(currentCircle === null){
+				if(currentNode === null){
 					
-					currentCircle = getClickedCircle(posx,posy);
+					currentNode = getClickedNode(posx,posy);
 					
-					if(currentCircle !== null){
-						var inputCircleName = document.getElementById('circleName');
-						inputCircleName.value = currentCircle.text;
-						var inputCircleSize = document.getElementById('circleSize');
-						inputCircleSize.value = currentCircle.size;
-						currentCircle.color = "purple";
+					if(currentNode !== null){
+						var inputNodeName = document.getElementById('NodeName');
+						inputNodeName.value = currentNode.text;
+						var inputNodeSize = document.getElementById('NodeSize');
+						inputNodeSize.value = currentNode.size;
+						currentNode.color = "purple";
 					}
 					
 				}else{
-					currentCircle.color = "white";
-					currentCircle.posx = posx;
-					currentCircle.posy = posy;
-					currentCircle = null;
+					currentNode.color = "white";
+					currentNode.posx = posx;
+					currentNode.posy = posy;
+					currentNode = null;
 				}
 			//Delete
 			}else if(mode == 2){
 				
-				for(var i=circles.length-1; i >= 1; i--){
+				for(var i=nodes.length-1; i >= 1; i--){
 						
-					if( (Math.pow(circles[i].posx-posx,2) + Math.pow(circles[i].posy-posy,2)) <= (circles[i].size*circles[i].size)){
+					if( (Math.pow(nodes[i].posx-posx,2) + Math.pow(nodes[i].posy-posy,2)) <= (nodes[i].size*nodes[i].size)){
 						
-						var superNode = circles[i].superNode;
+						var superNode = nodes[i].superNode;
 						
 						for(var j =0; j < superNode.connections.length; j++){
-							if(superNode.connections[j] == circles[i]){
+							if(superNode.connections[j] == nodes[i]){
 								superNode.connections.splice(j,1);
 								break;
 							}
 						}
 						
-						if(circles[i].connections !== null){
-							for(var k =0; k < circles[i].connections.length; k++){
-								circles[i].connections[k].superNode = superNode;
-								superNode.connections.push(circles[i].connections[k]);
+						if(nodes[i].connections !== null){
+							for(var k =0; k < nodes[i].connections.length; k++){
+								nodes[i].connections[k].superNode = superNode;
+								superNode.connections.push(nodes[i].connections[k]);
 							}
 						}
 						
-						circles.splice(i,1);
+						nodes.splice(i,1);
 						break;
 					}
 				}
@@ -227,23 +244,23 @@
 			
 		};
 
-		function go(){
+		/*function go(){
 			var size = document.getElementById('inputSize').value;
 			var posx = document.getElementById('inputPosX').value;
 			var posy = document.getElementById('inputPosY').value;
 			
-			circles.push(new Circle(size,posx,posy));
+			nodes.push(new Node(size,posx,posy));
 
 			drawAll();
-		}
+		}*/
 		
-		function editCircle(){
+		function editNode(){
 			
-			if(currentCircle !== null){
-				var inputCircleName = document.getElementById('circleName');
-				var inputCircleSize = document.getElementById('circleSize');
-				currentCircle.size = inputCircleSize.value;
-				currentCircle.text = inputCircleName.value;
+			if(currentNode !== null){
+				var inputNodeName = document.getElementById('NodeName');
+				var inputNodeSize = document.getElementById('NodeSize');
+				currentNode.size = inputNodeSize.value;
+				currentNode.text = inputNodeName.value;
 			}
 			
 			drawAll();
