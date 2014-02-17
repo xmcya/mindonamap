@@ -22,11 +22,6 @@
 			float:left;
 			width:800px;
 		}
-		#navi_add {
-			margin-left: 810px;
-			width: 300px;
-			background-color:lightblue;
-		}
 		#navi_mode {
 			margin-left: 810px;
 			width: 300px;
@@ -47,13 +42,6 @@
 			</canvas>
 		</div>
 		
-		<!-- <div id=navi_add>
-			<a>Size: </a><input type="number" id="inputSize" value="30"></br>
-			<a>PosX: </a><input type="number" id="inputPosX" value="30"></br>
-			<a>PosY: </a><input type="number" id="inputPosY" value="30"></br>
-			<button name="buttonGo" onclick="go();">Ok</button></br>
-		</div> -->
-		
 		<div id=navi_mode>
 			<input type="radio" name="mode" value="add" checked onclick="mode=0"><a> Add</a></br>
 			<input type="radio" name="mode" value="move" onclick="mode=1"><a> Move/Edit</a></br>
@@ -64,7 +52,8 @@
 		<div id=navi_edit>
 			<a>Current Node:</a></br>
 			<a>Name: </a><input type="text" id="NodeName" value="---"></br>
-			<a>Size: </a><input type="number" id="NodeSize" value="0"></br>
+			<a>Width: </a><input type="number" id="NodeWidth" value="0"></br>
+			<a>Height: </a><input type="number" id="NodeHeight" value="0"></br>
 			<button name="buttonGo" onclick="editNode();">Change</button></br>
 		</div>
 	</div>
@@ -83,7 +72,6 @@
 			this.draw = draw;
 			this.text = "Node";
 			this.color = "white";
-			//this.size = size;
 			this.width = width;
 			this.height = height;
 			this.supernode = null;
@@ -91,14 +79,18 @@
 		}
 
 		function init(){
-			nodes.push(new Node(100,100,60,40));
+			var rootNode = new Node(370,280,60,40);
+			rootNode.text = "root";
+			nodes.push(rootNode);
 			drawAll();
 		}
 
 		function draw(){
 			
 			var connected = this.connections;
+			var metrics = context.measureText(this.text);
 			
+			//draw connections to other nodes
 			for(var j=0; j < connected.length; j++){
 				context.moveTo(this.posx + this.width/2, 
 							   this.posy + this.height/2);
@@ -109,8 +101,13 @@
 				context.stroke();	
 			}
 			
+			//a node has to be at least as width as the text it has in it
+			if(metrics.width > this.width){
+				this.width = metrics.width;
+			}
+			
+			//draw node
 			context.beginPath();
-			//context.arc(this.posx,this.posy,this.size,0,Math.PI*2,true);
 			context.rect(this.posx,this.posy,this.width,this.height);
 			context.strokeStyle = 'black';
 			context.fillStyle = this.color;
@@ -118,8 +115,6 @@
 			context.stroke();
 			
 			context.fillStyle = 'black';
-			
-			var metrics = context.measureText(this.text);
 			
 			context.fillText(this.text,
 							 this.posx + this.width/2 - metrics.width/2, 
@@ -144,10 +139,6 @@
 			
 			for(var i=nodes.length-1; i >= 0; i--){
 				
-				/*if( (Math.pow(nodes[i].posx-posx,2)+Math.pow(nodes[i].posy-posy,2)) <= (nodes[i].size*nodes[i].size)){
-					return nodes[i];
-				}*/
-				
 				if(posx > nodes[i].posx && posx < (nodes[i].posx + nodes[i].width) &&
 				   posy > nodes[i].posy && posy < (nodes[i].posy + nodes[i].height)){
 					return nodes[i];
@@ -166,57 +157,11 @@
 			var posx = e.clientX - rect.left;
 			var posy = e.clientY - rect.top;
 
-			//Add
-			if(mode == 0){
-				
-				if(currentNode === null){
-					
-					currentNode = getClickedNode(posx,posy);
-					
-					if(currentNode !== null){
-						var inputNodeName = document.getElementById('NodeName');
-						inputNodeName.value = currentNode.text;
-						var inputNodeSize = document.getElementById('NodeSize');
-						inputNodeSize.value = currentNode.size;
-						currentNode.color = "purple";
-					}
-					
-				}else{
-					var newNode = new Node(posx,posy,40,40)
-					nodes.push(newNode);
-					currentNode.connections.push(newNode);
-					newNode.superNode = currentNode;
-					currentNode.color = "white";
-					currentNode = null;
-				}
-				
-			//Move
-			}else if(mode == 1){
-				
-				if(currentNode === null){
-					
-					currentNode = getClickedNode(posx,posy);
-					
-					if(currentNode !== null){
-						var inputNodeName = document.getElementById('NodeName');
-						inputNodeName.value = currentNode.text;
-						var inputNodeSize = document.getElementById('NodeSize');
-						inputNodeSize.value = currentNode.size;
-						currentNode.color = "purple";
-					}
-					
-				}else{
-					currentNode.color = "white";
-					currentNode.posx = posx;
-					currentNode.posy = posy;
-					currentNode = null;
-				}
 			//Delete
-			}else if(mode == 2){
+			if(mode == 2){
 				
 				for(var i=nodes.length-1; i >= 1; i--){
 						
-					//if( (Math.pow(nodes[i].posx-posx,2) + Math.pow(nodes[i].posy-posy,2)) <= (nodes[i].size*nodes[i].size)){
 					if(posx > nodes[i].posx && posx < (nodes[i].posx + nodes[i].width) &&
 					   posy > nodes[i].posy && posy < (nodes[i].posy + nodes[i].height)){
 					   
@@ -240,35 +185,62 @@
 						break;
 					}
 				}
-			}
+			//Add or Move/Edit
+			}else{
+				
+				if(currentNode === null){
+					
+					currentNode = getClickedNode(posx,posy);
+					
+					if(currentNode !== null){
+						var inputNodeName = document.getElementById('NodeName');
+						var inputNodeWidth = document.getElementById('NodeWidth');
+						var inputNodeHeight = document.getElementById('NodeHeight');
+						
+						inputNodeName.value = currentNode.text;
+						inputNodeWidth.value = currentNode.width;						
+						inputNodeHeight.value = currentNode.height;
+						currentNode.color = "#FFE0E8";
+					}
+					
+				}else{
+					//Add
+					if(mode == 0){
+						var newNode = new Node(posx,posy,40,40)
+						nodes.push(newNode);
+						currentNode.connections.push(newNode);
+						newNode.superNode = currentNode;
+					//Move/Edit
+					}else if(mode == 1){
+						currentNode.posx = posx;
+						currentNode.posy = posy;
+					}
+					
+					currentNode.color = "white";
+					currentNode = null;
+				}
 			
 			drawAll();
 			
 		};
-
-		/*function go(){
-			var size = document.getElementById('inputSize').value;
-			var posx = document.getElementById('inputPosX').value;
-			var posy = document.getElementById('inputPosY').value;
-			
-			nodes.push(new Node(size,posx,posy));
-
-			drawAll();
-		}*/
 		
 		function editNode(){
 			
 			if(currentNode !== null){
 				var inputNodeName = document.getElementById('NodeName');
-				var inputNodeSize = document.getElementById('NodeSize');
-				currentNode.size = inputNodeSize.value;
+				var inputNodeWidth = document.getElementById('NodeWidth');
+				var inputNodeHeight = document.getElementById('NodeHeight');
+				
+				currentNode.width = inputNodeWidth.value;
+				currentNode.height = inputNodeHeight.value;
 				currentNode.text = inputNodeName.value;
+				
+				currentNode.color = "white";
+				currentNode = null;
+				
+				drawAll();
 			}
-			
-			drawAll();
 		}
-
-
 
   </script>
 </html>
