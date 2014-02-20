@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Mindmap</title>
+    <title>MyMindOnAMap</title>
     <style type="text/css">
       canvas { border: 1px solid black; }
     </style>
@@ -61,7 +61,6 @@
 
   <script type="text/javascript">
 
-		var context;
 		var mode = 0;
 		var currentNode = null;
 		var nodes =[];
@@ -74,7 +73,7 @@
 			this.color = "white";
 			this.width = width;
 			this.height = height;
-			this.supernode = null;
+			this.superNode = null;
 			this.connections = [];
 		}
 
@@ -85,7 +84,7 @@
 			drawAll();
 		}
 
-		function draw(){
+		function draw(context){
 			
 			var connected = this.connections;
 			var metrics = context.measureText(this.text);
@@ -200,6 +199,7 @@
 						inputNodeName.value = currentNode.text;
 						inputNodeWidth.value = currentNode.width;						
 						inputNodeHeight.value = currentNode.height;
+						
 						currentNode.color = "#FFE0E8";
 					}
 					
@@ -219,13 +219,12 @@
 					currentNode.color = "white";
 					currentNode = null;
 				}
-			
+			}
 			drawAll();
-			
 		};
 		
 		function editNode(){
-			
+						
 			if(currentNode !== null){
 				var inputNodeName = document.getElementById('NodeName');
 				var inputNodeWidth = document.getElementById('NodeWidth');
