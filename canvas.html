@@ -51,9 +51,10 @@
 		
 		<div id=navi_edit>
 			<a>Current Node:</a></br>
-			<a>Name: </a><input type="text" id="NodeName" value="---"></br>
+			<!-- <a>Name: </a><input type="text" id="NodeName" value="---"></br> -->
 			<a>Width: </a><input type="number" id="NodeWidth" value="0"></br>
 			<a>Height: </a><input type="number" id="NodeHeight" value="0"></br>
+			<a>Text: </a><textarea id="NodeText" cols="30" rows="5"></textarea></br>
 			<button name="buttonGo" onclick="editNode();">Change</button></br>
 		</div>
 	</div>
@@ -130,6 +131,7 @@
 
 				for(var i=0; i < nodes.length; i++){
 					nodes[i].draw(context);
+					console.log("draw node "+i+", "+nodes[i].posx);
 				}
 			}
 		}
@@ -192,7 +194,7 @@
 					currentNode = getClickedNode(posx,posy);
 					
 					if(currentNode !== null){
-						var inputNodeName = document.getElementById('NodeName');
+						var inputNodeName = document.getElementById('NodeText'); //NodeName
 						var inputNodeWidth = document.getElementById('NodeWidth');
 						var inputNodeHeight = document.getElementById('NodeHeight');
 						
@@ -226,7 +228,7 @@
 		function editNode(){
 						
 			if(currentNode !== null){
-				var inputNodeName = document.getElementById('NodeName');
+				var inputNodeName = document.getElementById('NodeText'); //NodeName
 				var inputNodeWidth = document.getElementById('NodeWidth');
 				var inputNodeHeight = document.getElementById('NodeHeight');
 				
