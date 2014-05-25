@@ -62,7 +62,12 @@
 
   <script type="text/javascript">
 
-		var mode = 0;
+		var modes = {
+			ADD: 0,
+			EDIT: 1,
+			DELETE: 2
+		};
+		
 		var currentNode = null;
 		var nodes =[];
 
@@ -101,7 +106,7 @@
 				context.stroke();	
 			}
 			
-			//a node has to be at least as width as the text it has in it
+			//a node has to be at least as width as the text it contains
 			if(metrics.width > this.width){
 				this.width = metrics.width;
 			}
@@ -179,7 +184,7 @@
 			var posy = e.clientY - rect.top;
 
 			//Delete
-			if(mode == 2){
+			if(mode == modes.DELETE){
 				
 				for(var i=nodes.length-1; i >= 1; i--){
 						
@@ -227,13 +232,13 @@
 					
 				}else{
 					//Add
-					if(mode == 0){
+					if(mode == modes.ADD){
 						var newNode = new Node(posx,posy,40,40)
 						nodes.push(newNode);
 						currentNode.connections.push(newNode);
 						newNode.superNode = currentNode;
 					//Move/Edit
-					}else if(mode == 1){
+					}else if(mode == modes.EDIT){
 						currentNode.posx = posx;
 						currentNode.posy = posy;
 					}
