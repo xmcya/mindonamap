@@ -52,8 +52,8 @@
 		<div id=navi_edit>
 			<a>Current Node:</a></br>
 			<!-- <a>Name: </a><input type="text" id="NodeName" value="---"></br> -->
-			<a>Width: </a><input type="number" id="NodeWidth" value="0"></br>
-			<a>Height: </a><input type="number" id="NodeHeight" value="0"></br>
+			<!-- <a>Width: </a><input type="number" id="NodeWidth" value="0"></br> -->
+			<!-- <a>Height: </a><input type="number" id="NodeHeight" value="0"></br> -->
 			<a>Text: </a><textarea id="NodeText" cols="30" rows="5"></textarea></br>
 			<button name="buttonGo" onclick="editNode();">Change</button></br>
 		</div>
@@ -114,11 +114,26 @@
 			context.fill();
 			context.stroke();
 			
+			//draw text
 			context.fillStyle = 'black';
 			
-			context.fillText(this.text,
-							 this.posx + this.width/2 - metrics.width/2, 
-							 this.posy + this.height/2);
+			var lines = this.text.split('\n');
+			
+			console.log("lines: "+lines.length)
+			
+			for(i=0; i<lines.length; i++){
+			
+				context.fillText(lines[i],//this.text
+								 this.posx + this.width/2 - metrics.width/2, 
+								 this.posy + this.height/2 + i * 20);
+				//console.log("text :"+lines[i]);
+				
+				
+			}
+			
+			this.height = (lines.length+1) * 20;
+			
+			//console.log("height :"+this.height);
 		}
 
 		function drawAll(){
@@ -131,7 +146,7 @@
 
 				for(var i=0; i < nodes.length; i++){
 					nodes[i].draw(context);
-					console.log("draw node "+i+", "+nodes[i].posx);
+					//console.log("draw node "+i+", "+nodes[i].posx);
 				}
 			}
 		}
@@ -142,6 +157,11 @@
 				
 				if(posx > nodes[i].posx && posx < (nodes[i].posx + nodes[i].width) &&
 				   posy > nodes[i].posy && posy < (nodes[i].posy + nodes[i].height)){
+					   
+					   console.log("found: x: "+nodes[i].posx+", y: "+nodes[i].posy+"\n"+
+								   "width: "+nodes[i].width+", height: "+nodes[i].height+"\n"+
+								   "mouse: x: "+posx+" y: "+posy);
+					   
 					return nodes[i];
 				}
 			}
@@ -195,12 +215,12 @@
 					
 					if(currentNode !== null){
 						var inputNodeName = document.getElementById('NodeText'); //NodeName
-						var inputNodeWidth = document.getElementById('NodeWidth');
-						var inputNodeHeight = document.getElementById('NodeHeight');
+						//var inputNodeWidth = document.getElementById('NodeWidth');
+						//var inputNodeHeight = document.getElementById('NodeHeight');
 						
 						inputNodeName.value = currentNode.text;
-						inputNodeWidth.value = currentNode.width;						
-						inputNodeHeight.value = currentNode.height;
+						//inputNodeWidth.value = currentNode.width;						
+						//inputNodeHeight.value = currentNode.height;
 						
 						currentNode.color = "#FFE0E8";
 					}
@@ -229,11 +249,11 @@
 						
 			if(currentNode !== null){
 				var inputNodeName = document.getElementById('NodeText'); //NodeName
-				var inputNodeWidth = document.getElementById('NodeWidth');
-				var inputNodeHeight = document.getElementById('NodeHeight');
+				//var inputNodeWidth = document.getElementById('NodeWidth');
+				//var inputNodeHeight = document.getElementById('NodeHeight');
 				
-				currentNode.width = inputNodeWidth.value;
-				currentNode.height = inputNodeHeight.value;
+				//currentNode.width = inputNodeWidth.value;
+				//currentNode.height = inputNodeHeight.value;
 				currentNode.text = inputNodeName.value;
 				
 				currentNode.color = "white";
